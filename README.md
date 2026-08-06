@@ -37,11 +37,7 @@ cp .env.example .env
 如果协议文件发生变化，重新生成 Python gRPC 代码：
 
 ```bash
-./.venv/bin/python -m grpc_tools.protoc \
-  -I ./proto \
-  --python_out=./agent_service/generated \
-  --grpc_python_out=./agent_service/generated \
-  ./proto/agent.proto
+./.venv/bin/python scripts/generate_grpc.py
 ```
 
 ## Java REST 网关
