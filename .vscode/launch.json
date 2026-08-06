@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Python Agent gRPC",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "agent_service.server",
+      "cwd": "/Users/yunhua/Work/Java/project/EA-Haraness/python",
+      "python": "/Users/yunhua/Work/Java/project/EA-Haraness/python/.venv/bin/python",
+      "justMyCode": false,
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  ]
+}

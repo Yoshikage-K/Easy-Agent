@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package ea.agent.v1;
+
+option java_multiple_files = true;
+option java_package = "com.eaharness.agent.v1";
+option java_outer_classname = "AgentProto";
+
+service AgentService {
+  rpc Chat(ChatRequest) returns (ChatResponse);
+}
+
+message ChatRequest {
+  string trace_id = 1;
+  string session_id = 2;
+  string message = 3;
+}
+
+message ChatResponse {
+  string trace_id = 1;
+  string session_id = 2;
+  bool success = 3;
+  string content = 4;
+  string error_message = 5;
+}

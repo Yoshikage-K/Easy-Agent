@@ -1,0 +1,16 @@
+**/.venv/
+**/node_modules/
+**/dist/
+**/target/
+**/__pycache__/
+*.py[cod]
+*.tsbuildinfo
+**/.mailboxes/
+**/.memory/
+**/.tasks/
+**/.worktrees/
+**/.transcripts/
+**/.task_outputs/
+**/.env
+!.env.example
+.DS_Store
