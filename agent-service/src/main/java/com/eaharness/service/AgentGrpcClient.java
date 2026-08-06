@@ -17,7 +17,7 @@ public class AgentGrpcClient {
 
     public ChatResponse chat(String sessionId, String message) {
         String traceId = "trace_" + UUID.randomUUID().toString().replace("-", "");
-        ChatResponse response = stub.chat(ChatRequest.newBuilder()
+        com.eaharness.agent.v1.ChatResponse response = stub.chat(ChatRequest.newBuilder()
                 .setTraceId(traceId)
                 .setSessionId(sessionId)
                 .setMessage(message)
