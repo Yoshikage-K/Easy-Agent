@@ -36,7 +36,8 @@ async function selectSession(id: string) {
 async function newSession() {
   error.value = "";
   const data = await createSession();
-  activeSession.value = data.session;
+  const sessionData = await getSession(data.sessionId);
+  activeSession.value = sessionData.session;
   await refreshSessions();
   await scrollToBottom();
 }
@@ -68,7 +69,11 @@ async function submit() {
   await scrollToBottom();
   try {
     const data = await sendMessage(session.id, content);
-    activeSession.value = data.session;
+    if (!data.success) {
+      throw new Error(data.errorMessage || "Agent request failed");
+    }
+    const sessionData = await getSession(session.id);
+    activeSession.value = sessionData.session;
     await refreshSessions();
   } catch (err) {
     error.value = err instanceof Error ? err.message : String(err);
@@ -127,19 +132,23 @@ onMounted(async () => {
       </button>
 
       <nav class="session-list">
-        <button
+        <div
           v-for="session in sessions"
           :key="session.id"
-          class="session-item"
-          :class="{ active: session.id === activeId }"
-          type="button"
-          @click="selectSession(session.id)"
+          class="session-row"
         >
-          <span class="session-title">{{ session.title }}</span>
+          <button
+            class="session-item"
+            :class="{ active: session.id === activeId }"
+            type="button"
+            @click="selectSession(session.id)"
+          >
+            <span class="session-title">{{ session.title }}</span>
+          </button>
           <button class="delete-button" type="button" @click.stop="removeSession(session.id)">
             ×
           </button>
-        </button>
+        </div>
       </nav>
     </aside>
 

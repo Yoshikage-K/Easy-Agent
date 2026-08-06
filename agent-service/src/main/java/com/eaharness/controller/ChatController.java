@@ -2,6 +2,7 @@ package com.eaharness.controller;
 
 import com.eaharness.dto.ChatRequest;
 import com.eaharness.dto.ChatResponse;
+import com.eaharness.dto.SessionDetail;
 import com.eaharness.service.AgentGrpcClient;
 import com.eaharness.service.SessionService;
 import jakarta.validation.Valid;
@@ -45,11 +46,20 @@ public class ChatController {
     }
 
     @DeleteMapping("/sessions/{sessionId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteSession(@PathVariable String sessionId) {
+    public Map<String, Boolean> deleteSession(@PathVariable String sessionId) {
         if (!sessionService.delete(sessionId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
         }
+        return Map.of("ok", true);
+    }
+
+    @GetMapping("/sessions/{sessionId}")
+    public Map<String, SessionDetail> getSession(@PathVariable String sessionId) {
+        SessionDetail session = sessionService.detail(sessionId);
+        if (session == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
+        }
+        return Map.of("session", session);
     }
 
     @PostMapping("/sessions/{sessionId}/messages")
@@ -57,6 +67,11 @@ public class ChatController {
         if (!sessionService.exists(sessionId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found");
         }
-        return agentGrpcClient.chat(sessionId, request.message());
+        sessionService.addMessage(sessionId, "user", request.message());
+        ChatResponse response = agentGrpcClient.chat(sessionId, request.message());
+        if (response.success() && response.content() != null && !response.content().isBlank()) {
+            sessionService.addMessage(sessionId, "assistant", response.content());
+        }
+        return response;
     }
 }

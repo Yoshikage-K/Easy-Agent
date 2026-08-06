@@ -93,10 +93,15 @@ textarea {
   overflow: auto;
 }
 
-.session-item {
+.session-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 28px;
   align-items: center;
+  gap: 4px;
+}
+
+.session-item {
+  display: block;
   width: 100%;
   min-height: 36px;
   padding: 0 4px 0 10px;

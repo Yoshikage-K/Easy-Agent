@@ -9,8 +9,6 @@ export interface ChatMessage {
 export interface SessionSummary {
   id: string;
   title: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface SessionDetail extends SessionSummary {
@@ -35,7 +33,7 @@ export async function listSessions() {
 }
 
 export async function createSession() {
-  return request<{ session: SessionDetail }>("/api/sessions", { method: "POST" });
+  return request<{ sessionId: string }>("/api/sessions", { method: "POST" });
 }
 
 export async function getSession(id: string) {
@@ -47,12 +45,12 @@ export async function deleteSession(id: string) {
 }
 
 export async function sendMessage(id: string, content: string) {
-  return request<{ session: SessionDetail; assistant_messages: ChatMessage[] }>(
+  return request<{ traceId: string; sessionId: string; success: boolean; content: string; errorMessage: string }>(
     `/api/sessions/${id}/messages`,
     {
       method: "POST",
       headers: jsonHeaders,
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ message: content })
     }
   );
 }
