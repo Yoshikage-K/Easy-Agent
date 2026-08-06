@@ -6,8 +6,8 @@
       "type": "debugpy",
       "request": "launch",
       "module": "agent_service.server",
-      "cwd": "/Users/yunhua/Work/Java/project/EA-Haraness/python",
-      "python": "/Users/yunhua/Work/Java/project/EA-Haraness/python/.venv/bin/python",
+      "cwd": "/Users/yunhua/Work/Java/projects/EA-Haraness/python-agent",
+      "python": "/Users/yunhua/Work/Java/projects/EA-Haraness/python-agent/.venv/bin/python",
       "justMyCode": false,
       "env": {
         "PYTHONUNBUFFERED": "1"
