@@ -59,3 +59,18 @@ npm run dev
 ```
 
 打开 `http://127.0.0.1:5173`。
+
+## 只启动 RPC 服务
+
+这个脚本只启动 Python gRPC Server 和 Java Agent Service，不启动前端或 Python 的 FastAPI 主入口：
+
+```bash
+cd /Users/yunhua/Work/Java/projects/EA-Haraness
+./scripts/start-rpc-services.sh
+```
+
+脚本会优先使用当前 `PATH` 中的 `mvn`，其次使用 IntelliJ 自带的 Maven。也可以手动指定：
+
+```bash
+MAVEN_CMD=/absolute/path/to/mvn ./scripts/start-rpc-services.sh
+```

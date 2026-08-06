@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>com.eaharness</groupId>
-    <artifactId>ea-harness-java</artifactId>
+    <artifactId>agent-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>ea-harness-java</name>
+    <name>agent-service</name>
     <description>Java REST facade for the Python EA Agent</description>
 
     <properties>
