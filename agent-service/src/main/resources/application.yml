@@ -9,3 +9,24 @@ agent:
 spring:
   application:
     name: ea-harness-java
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+
+eaharness:
+  plugin:
+    plugins-directory: .plugins
+    auto-start: false
+  transfer:
+    worker-count: 8
+    part-size-bytes: 134217728
+    buffer-size-bytes: 8388608
+    max-part-count: 10000
+    max-retry-attempts: 3
+    retry-backoff-millis: 1000
+    request-timeout-seconds: 120
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://127.0.0.1:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin}
