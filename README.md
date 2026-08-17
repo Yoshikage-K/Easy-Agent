@@ -1,275 +1,189 @@
-# EA-Harness
+<div align="center">
 
-EA-Harness 是一个面向本地智能 Agent 的三层应用系统。项目通过 Vue 3 提供交互界面，使用 Java Spring Boot 构建统一的 REST 网关，并通过 gRPC 调用 Python Agent Runtime，形成清晰的前后端与 Agent 解耦架构。
+# 🤖 EA Harness
 
-项目重点关注 Agent 的运行时编排能力，包括会话管理、上下文维护、模型调用、工具执行、任务恢复以及跨语言服务通信。
+**一个用于本地运行和调试 EASY-AGENT 的全栈开发工作台**
 
-## Architecture
+<p>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-0.1%2B-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white" alt="Vue 3" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white" alt="Vite" />
+</p>
 
-```text
-┌──────────────────────┐
-│  Vue 3 Web Frontend  │ :5173
-└──────────┬───────────┘
-           │ HTTP / JSON
-           v
-┌──────────────────────────────────────┐
-│       Java Spring Boot Gateway       │ :8080
-│                                      │
-│  Session API · Chat API · RPC Client │
-└──────────────────┬───────────────────┘
-                   │ gRPC / Protobuf
-                   v
-┌──────────────────────────────────────┐
-│          Python Agent Runtime        │ :50051
-│                                      │
-│  Agent Loop · Context · Tools · Task │
-└──────────────────┬───────────────────┘
-                   │
-                   v
-              Model API
-```
+<p>
+  <a href="#-快速开始">快速开始</a> ·
+  <a href="#-架构概览">架构概览</a> ·
+  <a href="#-api">API</a> ·
+  <a href="#-测试">测试</a>
+</p>
 
-### Request Flow
+</div>
 
-一次对话请求的处理流程如下：
+---
 
-```text
-用户输入消息
-    ↓
-Vue 前端发送 REST 请求
-    ↓
-Java 网关校验会话并记录用户消息
-    ↓
-Java 通过 gRPC 调用 Python Agent
-    ↓
-Python Agent 执行模型调用和工具编排
-    ↓
-Python 返回 Agent 结果
-    ↓
-Java 保存助手消息并返回前端
-```
+## 👋 About the Project
 
-Java 网关负责协议转换、会话 API 和服务边界；Python 服务负责 Agent 的核心推理与执行流程。
+EA Harness 是 EASY-AGENT runtime 的本地开发与验证环境，提供一个浏览器聊天界面和一组后端会话 API。
 
-## Core Capabilities
+它把 Agent 的核心执行过程集中在一个可观察、可调试的工作台中，方便验证：
 
-### Agent Runtime
+- 多轮会话与消息历史管理
+- Agent Loop、模型调用和工具调用
+- 上下文压缩与历史整理
+- MCP、Skills、Subagent 和后台任务
+- 会话创建、切换、删除和运行状态展示
 
-Python Agent Runtime 是系统的核心执行引擎，主要负责：
+当前项目由 Vue 前端、FastAPI 接入层和 Python Agent runtime 组成，并保留了 gRPC/Protobuf 服务作为独立服务化入口。
 
-- 维护多轮对话历史；
-- 组装系统提示词和运行时上下文；
-- 调用大语言模型；
-- 根据模型输出选择并执行工具；
-- 处理多轮工具调用；
-- 处理上下文过长、模型重试和恢复；
-- 支持后台任务、定时任务以及 Agent 间协作基础能力。
+## ✨ Features
 
-核心代码位于：
+| 模块 | 能力 |
+| --- | --- |
+| Chat Workspace | 会话列表、新建任务、消息输入和结果展示 |
+| Session API | 创建、查询、删除会话，提交用户消息 |
+| Agent Loop | 驱动模型、工具结果和下一轮推理 |
+| Context | 管理上下文长度，必要时压缩历史消息 |
+| Tools & MCP | 扩展外部工具、MCP 服务和 Agent Skills |
+| Subagent | 支持子 Agent 和后台任务协作 |
+| Service Layer | FastAPI HTTP 接口与 gRPC 服务入口 |
 
-```text
-agent-core/agent/
-├── loop.py          Agent 主循环
-├── context.py       上下文构建和消息处理
-├── prompt.py        系统提示词组装
-├── tools/           工具定义、注册和执行
-├── task.py          任务状态和任务管理
-├── background.py    后台任务调度
-├── cron.py          定时任务处理
-├── subagent/        Agent 协作能力
-└── runtime.py       运行时初始化
-```
+## 🧰 Tech Stack
 
-### Java Gateway
+### Languages
 
-Java 服务作为前端和 Python Agent 之间的应用网关，负责：
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 
-- 提供会话创建、查询和删除接口；
-- 接收用户消息并校验会话有效性；
-- 生成 traceId 和构造 gRPC 请求；
-- 调用 Python Agent Service；
-- 将 Protobuf 响应转换成 REST DTO；
-- 保存会话消息并向前端返回统一响应。
+### Backend
 
-核心代码位于：
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Anthropic](https://img.shields.io/badge/Anthropic-191919?style=for-the-badge&logo=anthropic&logoColor=white)
+![gRPC](https://img.shields.io/badge/gRPC-244C5A?style=for-the-badge&logo=grpc&logoColor=white)
+![Protocol Buffers](https://img.shields.io/badge/Protobuf-4285F4?style=for-the-badge&logo=google&logoColor=white)
+
+### Frontend
+
+![Vue](https://img.shields.io/badge/Vue_3-4FC08D?style=for-the-badge&logo=vuedotjs&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+
+## 🏗️ 架构概览
 
 ```text
-agent-service/src/main/java/com/eaharness/agent/
-├── config/       gRPC、Web 和 Agent 配置
-├── controller/   会话和消息 REST 接口
-├── dto/          请求、响应和会话数据模型
-└── service/      gRPC 客户端和会话服务
+┌────────────────────┐
+│ Vue 3 Frontend     │  会话列表 / 聊天窗口 / 消息输入
+└─────────┬──────────┘
+          │ HTTP JSON
+┌─────────▼──────────┐
+│ FastAPI API        │  /api/health
+│                    │  /api/sessions
+└─────────┬──────────┘
+          │
+┌─────────▼──────────┐
+│ Session & Runtime  │  会话状态 / Agent 调度
+└─────────┬──────────┘
+          │
+┌─────────▼──────────┐
+│ Agent Loop         │  模型调用 ↔ 工具调用 ↔ 工具结果
+└─────┬───────┬──────┘
+      │       │
+  Tools     MCP / Skills / Subagents / Background Tasks
 ```
 
-### Cross-language RPC
+一次消息的核心路径是：前端提交消息 → FastAPI 找到会话 → runtime 驱动 Agent Loop → Agent 根据需要调用工具 → 结果回到会话 → API 返回给前端。
 
-项目通过 Protocol Buffers 定义 Java 与 Python 之间的通信协议：
-
-```protobuf
-service AgentService {
-  rpc Chat(ChatRequest) returns (ChatResponse);
-}
-```
-
-请求包含：
-
-- `trace_id`：请求链路标识；
-- `session_id`：会话标识；
-- `message`：用户消息。
-
-响应包含：
-
-- `success`：调用是否成功；
-- `content`：Agent 返回内容；
-- `error_message`：失败时的错误信息。
-
-协议文件位于：
+## 📁 Project Structure
 
 ```text
-agent-service/src/main/proto/agent.proto
-agent-core/proto/agent.proto
+EA-Harness/
+├── backend/
+│   ├── main.py                 # FastAPI 应用与 HTTP API
+│   ├── agent/                  # Agent runtime 核心
+│   │   ├── loop.py             # Agent 主循环
+│   │   ├── context.py          # 上下文准备
+│   │   ├── compact.py          # 历史消息压缩
+│   │   ├── tools/              # 工具实现
+│   │   ├── subagent/           # 子 Agent
+│   │   ├── mcp.py              # MCP 集成
+│   │   ├── skills.py           # Skills 加载
+│   │   └── test/               # Agent 测试
+│   ├── agent_service/          # gRPC 服务入口
+│   ├── app/                    # 应用层模块
+│   └── requirements.txt
+├── frontend/
+│   ├── src/                    # Vue 页面与组件
+│   ├── package.json
+│   └── vite.config.ts
+├── proto/
+│   └── agent.proto             # gRPC/Protobuf 定义
+└── README.md
 ```
 
-### Web Frontend
+## 🚀 快速开始
 
-Vue 3 前端提供轻量级 Agent 工作台，支持：
-
-- 创建新会话；
-- 切换历史会话；
-- 删除会话；
-- 发送多轮消息；
-- 展示 Agent 回复和错误状态；
-- 在请求执行期间显示运行状态。
-
-核心代码位于：
-
-```text
-web-frontend/src/
-├── App.vue       页面和交互逻辑
-├── api.ts        REST API 封装
-├── main.ts       Vue 应用入口
-└── styles.css    页面样式
-```
-
-## Technology Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | Vue 3、TypeScript、Vite |
-| Java Gateway | Java 17、Spring Boot 3.4、Spring MVC |
-| Agent Runtime | Python、Anthropic SDK |
-| RPC | gRPC、Protocol Buffers |
-| Java Build | Maven |
-| Python Dependencies | pip、requirements.txt |
-
-## Project Structure
-
-```text
-EA-Haraness/
-├── agent-core/       Python Agent Runtime 和 gRPC 服务
-├── agent-service/    Java Spring Boot REST 网关
-├── web-frontend/     Vue 3 前端
-├── scripts/          本地联调脚本
-└── PRD/              项目设计和技术文档
-```
-
-Java 服务中的 Agent 代码按功能域组织：
-
-```text
-com.eaharness.agent
-├── config/
-├── controller/
-├── dto/
-└── service/
-```
-
-这种结构将 Agent 相关的配置、接口、数据模型和业务服务集中在同一功能域中，避免技术分层目录随着功能增长而相互混杂。
-
-## Local Development
-
-### Configure the Python Runtime
+### 1. 启动后端
 
 ```bash
-cd /Users/yunhua/Work/Java/projects/EA-Haraness/agent-core
+cd /Users/yunhua/Work/Agent/EA-Harness/backend
 python3 -m venv .venv
-./.venv/bin/python -m pip install -r requirements.txt
+source .venv/bin/activate
+pip install -r requirements.txt
 cp .env.example .env
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-在 `.env` 中配置模型和 API 相关环境变量。真实密钥不要提交到 Git。
+后端默认地址：<http://127.0.0.1:8000>
 
-### Start the Python gRPC Service
+### 2. 启动前端
+
+新开一个终端：
 
 ```bash
-cd /Users/yunhua/Work/Java/projects/EA-Haraness/agent-core
-./.venv/bin/python -m agent_service.server
-```
-
-默认监听：
-
-```text
-127.0.0.1:50051
-```
-
-### Start the Java Gateway
-
-```bash
-cd /Users/yunhua/Work/Java/projects/EA-Haraness/agent-service
-mvn generate-sources
-mvn spring-boot:run
-```
-
-默认监听：
-
-```text
-127.0.0.1:8080
-```
-
-Java 服务通过 `agent-service/src/main/resources/application.yml` 配置 Python gRPC 地址。
-
-### Start the Frontend
-
-```bash
-cd /Users/yunhua/Work/Java/projects/EA-Haraness/web-frontend
+cd /Users/yunhua/Work/Agent/EA-Harness/frontend
 npm install
 npm run dev
 ```
 
-访问：
+打开 <http://127.0.0.1:5173> 即可进入工作台。
 
-```text
-http://127.0.0.1:5173
-```
+> 运行模型调用前，请根据 `backend/.env.example` 配置模型相关环境变量。复制的 Agent runtime 也支持 `backend/agent/.env`。不要把真实密钥提交到 Git。
 
-### Start Java and Python Together
+## 🔌 API
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `GET` | `/api/health` | 检查服务状态 |
+| `GET` | `/api/sessions` | 获取会话列表 |
+| `POST` | `/api/sessions` | 创建新会话 |
+| `GET` | `/api/sessions/{session_id}` | 获取会话详情 |
+| `DELETE` | `/api/sessions/{session_id}` | 删除会话 |
+| `POST` | `/api/sessions/{session_id}/messages` | 向会话发送消息 |
+
+## 🧪 测试
+
+后端测试：
 
 ```bash
-cd /Users/yunhua/Work/Java/projects/EA-Haraness
-./scripts/start-rpc-services.sh
+cd /Users/yunhua/Work/Agent/EA-Harness/backend
+python -m unittest discover -s agent/test -p 'test_*.py'
 ```
 
-该脚本启动 Python gRPC Server 和 Java Gateway，不启动前端开发服务器。
+前端类型检查与生产构建：
 
-## API Overview
-
-```text
-GET    /api/health
-POST   /api/sessions
-GET    /api/sessions
-GET    /api/sessions/{sessionId}
-DELETE /api/sessions/{sessionId}
-POST   /api/sessions/{sessionId}/messages
+```bash
+cd /Users/yunhua/Work/Agent/EA-Harness/frontend
+npm run build
 ```
 
-## Design Focus
+## 🧭 开发约定
 
-- 通过 Java 网关隔离前端协议与 Agent Runtime 实现；
-- 通过 gRPC 和 Protobuf 明确 Java 与 Python 的跨语言接口契约；
-- 通过会话上下文维护多轮 Agent 交互；
-- 通过工具注册和统一调用入口扩展 Agent 执行能力；
-- 通过重试、上下文压缩和恢复逻辑提升长任务稳定性；
-- 通过清晰的功能域边界为后续流式输出、评估体系和持久化能力扩展保留空间。
+- 后端配置放在本地 `.env` 中，密钥和运行时状态不要提交。
+- 新增 Agent 能力时，优先放入对应的 runtime 模块，并补充测试。
+- 修改 API 时同步更新前端调用和本 README 的接口表。
+- 对上下文、工具调用和子 Agent 的改动，重点验证异常路径与重复调用行为。
 
-## Current Scope
+## 📌 Status
 
-EA-Harness 当前定位为本地 Agent 工作台和架构验证项目。会话数据和部分运行时状态仍采用内存实现；生产化部署还需要补充身份认证、权限控制、持久化存储、流式响应、系统化评估、任务取消和可观测性能力。
+项目当前定位为 EASY-AGENT 的本地开发、联调和实验性验证环境。功能会随着 Agent runtime 的演进持续补充。
+
