@@ -20,6 +20,7 @@ from .utils import terminal_print, print_turn_assistants
 from .tools.core import has_tool_use, call_tool_handler
 from .compact import reactive_compact, compact_history
 from .hooks import trigger_hooks
+from .memory import load_memories, extract_memories, consolidate_memories
 from .runtime import initialize_runtime
 from .subagent.protocol import consume_lead_inbox
 
@@ -62,6 +63,8 @@ def cron_autorun_loop(history: list, context: dict):
 
 def agent_loop(messages: list, context: dict):
     global rounds_since_todo
+    # 每个用户任务开始时只加载一次相关记忆。
+    memories = load_memories(messages)
     tools, handlers = assemble_tool_pool()
     state = RecoveryState()
     max_tokens = DEFAULT_MAX_TOKENS
@@ -83,6 +86,9 @@ def agent_loop(messages: list, context: dict):
 
         prepare_context(messages)
         context = update_context(context, messages)
+        # update_context 会重新构造 context，因此每轮需要放回本次任务
+        # 已加载的记忆；这里只是字符串赋值，不会再次调用模型。
+        context["memories"] = memories
         tools, handlers = assemble_tool_pool()
 
         try:
@@ -114,6 +120,9 @@ def agent_loop(messages: list, context: dict):
         messages.append({"role": "assistant", "content": response.content})
         if not has_tool_use(response.content):
             trigger_hooks("Stop", messages)
+            # 任务完成后提取新记忆；达到阈值时再执行记忆合并。
+            extract_memories(messages)
+            consolidate_memories()
             return
 
         results = []

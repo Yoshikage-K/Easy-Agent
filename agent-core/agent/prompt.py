@@ -1,4 +1,3 @@
-from datetime import datetime
 from .config import WORKDIR
 from .skills import list_skills
 from .state import mcp_clients
@@ -24,7 +23,6 @@ def assemble_system_prompt(context: dict) -> str:
     sections = [PROMPT_SECTIONS["identity"],
                 PROMPT_SECTIONS["tools"],
                 PROMPT_SECTIONS["workspace"]]
-    sections.append(f"Current time: {datetime.now().isoformat(timespec='seconds')}")
     sections.append("Skills catalog:\n" + list_skills() +
                     "\nUse load_skill(name) when a skill is relevant.")
     if context.get("memories"):
